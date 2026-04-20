@@ -17,7 +17,7 @@ Running `task` with no arguments launches a hierarchical picker over every task 
 ### Experimental
 Task has an experimental feature that allows user to use remote Taskfile.yaml entrypoints. The `Taskmenu-install.yaml` file in this repo contains a task to simplify initializing the `Taskfile.yaml` and `Taskmenu.yaml` files in a new repo. You can execute it with the following command:
 ```bash
-TASK_X_REMOTE_TASKFILES=1 task --taskfile {tbd}
+TASK_X_REMOTE_TASKFILES=1 task --taskfile https://raw.githubusercontent.com/badarsebard/taskfile-menu/refs/heads/main/Taskmenu-install.yaml
 ```
 
 ## Prerequisites
