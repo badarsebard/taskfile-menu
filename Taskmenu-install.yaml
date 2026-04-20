@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+includes:
+  base: ./Taskfile.yaml
+  menu: ./Taskmenu.yaml
+
+tasks:
+  default:
+    cmds:
+      - ls -al .task

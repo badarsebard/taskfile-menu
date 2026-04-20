@@ -1,0 +1,128 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  default:
+    desc: Interactive hierarchical task picker (fzf)
+    silent: true
+    interactive: true
+    cmds:
+      - cmd: |
+          missing=()
+          packages=()
+          for c in fzf jq awk; do
+            if ! command -v "$c" >/dev/null 2>&1; then
+              missing+=("$c")
+              case "$c" in
+                awk) packages+=("gawk") ;;
+                *)   packages+=("$c") ;;
+              esac
+            fi
+          done
+          {
+            echo "Notice: interactive task menu disabled — missing: ${missing[*]}"
+            echo "  macOS:  brew install ${packages[*]}"
+            echo "  Debian: sudo apt-get install ${packages[*]}"
+            echo "Falling back to 'task --list'."
+            echo
+          } >&2
+          task --list
+        if: '! command -v fzf >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1 || ! command -v awk >/dev/null 2>&1'
+
+      - cmd: |
+          set -euo pipefail
+
+          tasks=$(task --list-all --json | jq -r '.tasks[] | select(.name != "default") | [.name, (.desc // "(no description)")] | @tsv')
+
+          join_path() {
+            local sep=$1; shift
+            local out=""
+            for p in "$@"; do
+              if [[ -z $out ]]; then out=$p; else out="$out$sep$p"; fi
+            done
+            printf '%s' "$out"
+          }
+
+          compute_entries() {
+            local prefix=$1
+            awk -F'\t' -v p="$prefix" '
+              index($1, p) != 1 { next }
+              {
+                rem = substr($1, length(p) + 1)
+                if (rem == "") next
+                ci = index(rem, ":")
+                if (ci == 0) {
+                  leaf[rem] = 1
+                  leaf_desc[rem] = $2
+                  seen[rem] = 1
+                } else {
+                  seg = substr(rem, 1, ci - 1)
+                  branch[seg]++
+                  seen[seg] = 1
+                }
+              }
+              END {
+                for (s in seen) {
+                  if (leaf[s]) {
+                    printf "%s\t%s\tleaf\t%s\n", s, leaf_desc[s], s
+                  }
+                  if (branch[s]) {
+                    printf "%s/\tsubmenu (%d items)\tbranch\t%s\n", s, branch[s], s
+                  }
+                }
+              }
+            ' <<<"$tasks" | sort -t$'\t' -k1,1
+          }
+
+          fzf_pick() {
+            fzf \
+              --prompt="> " --header="$1" \
+              --height=60% --reverse \
+              --delimiter=$'\t' --with-nth=1 \
+              --preview='printf "%s" {2}' --preview-window=down:4:wrap \
+              --no-multi
+          }
+
+          path=()
+
+          while :; do
+            if ((${#path[@]} > 0)); then
+              prefix="$(join_path ":" "${path[@]}"):"
+              header="task: $(join_path " > " "${path[@]}")"
+            else
+              prefix=""
+              header="task: (root)"
+            fi
+
+            entries=$(compute_entries "$prefix")
+            [[ -z $entries ]] && exit 0
+
+            if ((${#path[@]} > 0)); then
+              entries=$'..\tgo back\tback\t..\n'"$entries"
+            fi
+
+            selected=$(printf '%s\n' "$entries" | fzf_pick "$header") || exit 0
+
+            kind=$(awk -F'\t' '{print $3}' <<<"$selected")
+            seg=$(awk -F'\t' '{print $4}' <<<"$selected")
+
+            case $kind in
+              back)
+                if ((${#path[@]} > 1)); then
+                  path=("${path[@]:0:${#path[@]}-1}")
+                else
+                  path=()
+                fi
+                ;;
+              leaf)
+                name="${prefix}${seg}"
+                printf '\n> task %s\n\n' "$name"
+                exec task "$name"
+                ;;
+              branch)
+                path+=("$seg")
+                ;;
+            esac
+          done
+        if: 'command -v fzf >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && command -v awk >/dev/null 2>&1'

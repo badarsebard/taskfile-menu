@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+includes:
+  menu:
+    taskfile: ./Taskmenu.yaml
+    flatten: true
+
+tasks:
+  # Add your project tasks here
+
+  # Example usage
+  unique-leaf:
+    desc: unique leaf task entry
+    cmds:
+      - echo "a unique leaf task entry"
+
+  prefix-leaf:
+    desc: leaf task entry which is also a menu prefix
+    cmds:
+      - echo "a leaf task entry which is also a menu prefix"
+
+  prefix-leaf:sub-menu-leaf:
+    desc: leaf task entry under a sub-menu based on its prefix
+    cmds:
+      - echo "a leaf task entry under a sub-menu based on its prefix"
