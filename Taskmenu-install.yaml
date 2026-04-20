@@ -12,3 +12,8 @@ tasks:
       - cp .task/remote/http.raw.githubusercontent.com.main.Taskfile.yaml.*.yaml Taskfile.yaml
       - cp .task/remote/http.raw.githubusercontent.com.main.Taskmenu.yaml.*.yaml Taskmenu.yaml
       - rm -rf .task/
+
+  menu-only:
+    cmds:
+      - cp .task/remote/http.raw.githubusercontent.com.main.Taskmenu.yaml.*.yaml Taskmenu.yaml
+      - rm -rf .task/

@@ -15,10 +15,16 @@ Running `task` with no arguments launches a hierarchical picker over every task 
 4. Run `task` to launch the menu.
 
 ### Experimental
-Task has an experimental feature that allows user to use remote Taskfile.yaml entrypoints. The `Taskmenu-install.yaml` file in this repo contains a task to simplify initializing the `Taskfile.yaml` and `Taskmenu.yaml` files in a new repo. You can execute it with the following command:
+Task has an experimental feature that lets you use remote Taskfile.yaml entrypoints. The `Taskmenu-install.yaml` file in this repo contains a task to simplify initializing the `Taskfile.yaml` and `Taskmenu.yaml` files in a new repo. You can execute it with the following command:
 ```bash
-TASK_X_REMOTE_TASKFILES=1 task --taskfile https://raw.githubusercontent.com/badarsebard/taskfile-menu/refs/heads/main/Taskmenu-install.yaml
+TASK_X_REMOTE_TASKFILES=1 task --yes --taskfile https://raw.githubusercontent.com/badarsebard/taskfile-menu/refs/heads/main/Taskmenu-install.yaml
 ```
+
+**Warning:** this will overwrite any existing `Taskfile.yaml` in the directory.
+
+If you're adding the menu to a project that already has a `Taskfile.yaml`, invoke the `menu-only` task instead — it fetches only `Taskmenu.yaml`. Then add `Taskmenu.yaml` to the `includes` of your existing `Taskfile.yaml`, and if you plan to flatten it, check for an existing `default` task first.
+
+For security, we **strongly** recommend forking this repository and running the command against your fork — replace `badarsebard/taskfile-menu` in the URL with your own slug. That way you only run code you control.
 
 ## Prerequisites
 
@@ -44,8 +50,9 @@ If any of `fzf`, `jq`, or `awk` are missing, the default task prints a notice na
 
 - Tasks are discovered from `task --list-all --json`.
 - Names are split on `:` to build a tree — e.g. `deploy:dev` and `deploy:prod` appear under a `deploy/` submenu.
-- A task that is *both* a leaf and a prefix for other tasks shows up as two entries side by side: the task itself, and a `name/` submenu containing its children.
+- A task that is *both* runnable itself and a menu prefix for other tasks shows up as two entries side by side: the task itself, and a `name/` submenu containing its children.
 - `..` at the top of any submenu goes back one level.
+- Type to fuzzy-filter entries in the current menu by name; matches update as you type.
 - Enter runs the selected task; Esc exits the picker.
 
 ## Adding tasks
@@ -55,4 +62,4 @@ Edit `Taskfile.yaml` and drop tasks under `tasks:`. They'll appear in the menu a
 ## Files
 
 - `Taskfile.yaml` — project entrypoint. Includes `Taskmenu.yaml`. Home for your tasks.
-- `Taskmenu.yaml` — `default` task (fzf picker with a soft fallback to `task --list`). Keep untouched unless customizing the picker.
+- `Taskmenu.yaml` — `default` task (fzf picker with a soft fallback to `task --list`). Leave as-is unless you're customizing the picker.

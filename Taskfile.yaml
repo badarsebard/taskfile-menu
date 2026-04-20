@@ -11,17 +11,17 @@ tasks:
   # Add your project tasks here
 
   # Example usage
-  unique-leaf:
-    desc: unique leaf task entry
+  standalone-task:
+    desc: a top-level task with no submenu
     cmds:
-      - echo "a unique leaf task entry"
+      - echo "a top-level task with no submenu"
 
-  prefix-leaf:
-    desc: leaf task entry which is also a menu prefix
+  task-and-menu:
+    desc: a task that is also a menu prefix for nested tasks
     cmds:
-      - echo "a leaf task entry which is also a menu prefix"
+      - echo "a task that is also a menu prefix for nested tasks"
 
-  prefix-leaf:sub-menu-leaf:
-    desc: leaf task entry under a sub-menu based on its prefix
+  task-and-menu:nested-task:
+    desc: a task nested under another task's menu prefix
     cmds:
-      - echo "a leaf task entry under a sub-menu based on its prefix"
+      - echo "a task nested under another task's menu prefix"
